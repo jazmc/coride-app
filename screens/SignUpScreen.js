@@ -27,11 +27,7 @@ export default function SignUpScreen({ route }) {
 
   const navigation = useNavigation();
 
-  const app = route.params.app;
-
   const auth = route.params.auth;
-
-  console.log(auth);
 
   useEffect(() => {
     if (password !== passwordagain) {
@@ -52,14 +48,17 @@ export default function SignUpScreen({ route }) {
     }
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        navigation.navigate("Confirm Email");
+        // success -> automatic sign in
+        route.params.setAuthenticatedUser(userCredential.user);
+        navigation.navigate("Home");
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.warn(errorCode);
+
+        route.params.setAuthenticatedUser({});
+
         if (errorCode == "auth/email-already-in-use") {
           navigation.navigate("Error Screen", {
             header: "Sähköposti käytössä",
@@ -77,8 +76,6 @@ export default function SignUpScreen({ route }) {
           });
         }
       });
-
-    // send registration
   };
 
   const onReadMorePress = () => {
@@ -93,11 +90,12 @@ export default function SignUpScreen({ route }) {
     <LinearGradient
       start={{ x: 0.4, y: 0.1 }}
       end={{ x: 0.6, y: 1.0 }}
-      colors={["#ffddd2", "#83c5be"]}
+      colors={[colors.lightSecondary, colors.lightPrimary]}
       style={styles.container}
     >
       <ScrollView
         style={styles.scroll}
+        keyboardShouldPersistTaps={"always"}
         contentContainerStyle={{
           alignItems: "center",
           justifyContent: "center",

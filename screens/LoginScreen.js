@@ -1,6 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Platform, Image, useWindowDimensions, ScrollView } from "react-native";
+import {
+  Platform,
+  Image,
+  useWindowDimensions,
+  ScrollView,
+  Alert,
+} from "react-native";
 import SvgComponent from "./../assets/Coridesvg";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomInput from "../components/CustomInput";
@@ -8,18 +14,67 @@ import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
-import { auth } from "../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
-export default function LoginScreen() {
+export default function LoginScreen({ route }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { height } = useWindowDimensions();
   const navigation = useNavigation();
 
+  const auth = route.params.auth;
+
+  useEffect(() => {
+    if (Object.keys(route.params.authenticatedUser).length > 0) {
+      // if user is logged in, redirect on page load
+      navigation.navigate("Home");
+    }
+  }, []);
+
   const onSignInPressed = () => {
-    // validation
-    //auth.signInWithEmailAndPassword();
-    navigation.navigate("Home");
+    if (email == "" || password == "") {
+      Alert.alert("Täytä molemmat kentät.");
+      return false;
+    }
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        route.params.setAuthenticatedUser(userCredential.user);
+        navigation.navigate("Home");
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.warn(errorCode);
+
+        route.params.setAuthenticatedUser({});
+
+        if (
+          errorCode == "auth/user-not-found" ||
+          errorCode == "auth/wrong-password"
+        ) {
+          navigation.navigate("Error Screen", {
+            header: "Virheelliset tiedot",
+            message: "Antamasi sähköpostiosoite tai salasana oli virheellinen.",
+            navPrimary: "Login",
+            navPrimaryText: "Yritä uudelleen",
+          });
+        } else if (errorCode == "auth/too-many-requests") {
+          navigation.navigate("Error Screen", {
+            header: "Liikaa kirjautumisyrityksiä",
+            message:
+              "Tähän tiliin liittyen on tehty lyhyen ajan sisään liikaa epäonnistuneita kirjautumisyrityksiä. Yritä myöhemmin uudelleen.",
+            navPrimary: "Login",
+            navPrimaryText: "Yritä uudelleen",
+          });
+        } else {
+          navigation.navigate("Error Screen", {
+            header: errorCode,
+            message: errorMessage,
+            navPrimary: "Login",
+            navPrimaryText: "Palaa kirjautumissivulle",
+          });
+        }
+      });
   };
 
   const onForgotPasswordPressed = () => {
@@ -39,6 +94,7 @@ export default function LoginScreen() {
     >
       <ScrollView
         style={styles.scroll}
+        keyboardShouldPersistTaps={"always"}
         contentContainerStyle={{
           alignItems: "center",
           justifyContent: "center",
