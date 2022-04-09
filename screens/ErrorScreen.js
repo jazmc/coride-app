@@ -15,21 +15,23 @@ import CustomInput from "../components/CustomInput";
 import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
+
 import { useNavigation } from "@react-navigation/native";
 
-export default function ForgotPasswordScreen() {
-  const [email, setEmail] = useState("");
+export default function ResetPasswordScreen({ route }) {
+  const header = route.params.header;
+  const message = route.params.message;
+  const navPrimary = route.params.navPrimary;
+  const navPrimaryText = route.params.navPrimaryText;
+
   const navigation = useNavigation();
 
-  const onResetPressed = () => {
-    console.warn("reset pw pressed");
-    // validate and send to email
-    navigation.navigate("Reset Password");
+  const onNavPrimaryPressed = () => {
+    navigation.navigate(navPrimary);
   };
 
-  const onBackToLoginPressed = () => {
-    console.warn("back 2 loginpressed");
-    navigation.navigate("Login");
+  const onGoBackPressed = () => {
+    navigation.goBack();
   };
 
   return (
@@ -47,35 +49,24 @@ export default function ForgotPasswordScreen() {
         }}
       >
         <Text style={[styles.h2Text, { color: colors.darkPrimary }]}>
-          Palauta salasanasi
+          {header}
         </Text>
 
-        <CustomInput
-          placeholder="Syötä tiliisi liitetty sähköpostiosoite"
-          value={email}
-          setValue={setEmail}
-        />
-
         <View style={styles.textContainer}>
-          <Text style={{ color: colors.greyish }}>
-            Jos antamallesi sähköpostiosoitteelle löytyy käyttäjätili, lähetämme
-            sähköpostiisi koodin, jolla voit vaihtaa salasanasi. Tarkistathan
-            myös roskapostikansion, jos koodi ei näytä tulleen sähköpostiisi.
-            Sen saapumisessa voi kestää joitain minuutteja.
-          </Text>
+          <Text style={{ color: "#000" }}>{message}</Text>
         </View>
 
         <CustomButton
-          text="Palauta salasana"
+          text={navPrimaryText}
           bgcolor={colors.darkPrimary}
-          onPress={onResetPressed}
+          onPress={onNavPrimaryPressed}
         />
         <CustomButton
-          text="Takaisin kirjautumissivulle"
+          text="Takaisin edelliselle sivulle"
           bgcolor="transparent"
-          fontcolor={colors.darkPrimary}
-          onPress={onBackToLoginPressed}
+          onPress={onGoBackPressed}
           outlined={true}
+          fontcolor={colors.darkPrimary}
         />
 
         <StatusBar style="auto" />

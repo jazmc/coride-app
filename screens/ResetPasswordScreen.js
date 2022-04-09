@@ -16,21 +16,26 @@ import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 
+import { useNavigation } from "@react-navigation/native";
+
 export default function ResetPasswordScreen() {
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [passwordagain, setPasswordagain] = useState("");
 
+  const navigation = useNavigation();
+
   const onResetPressed = () => {
-    console.warn("reset pw pressed");
+    // validate code and new password
+    navigation.navigate("Login");
   };
 
   const onBackToLoginPressed = () => {
-    console.warn("back 2 loginpressed");
+    navigation.navigate("Login");
   };
 
   const onEmailFailPressed = () => {
-    console.warn("email fail pressed");
+    navigation.navigate("Forgot Password");
   };
 
   return (

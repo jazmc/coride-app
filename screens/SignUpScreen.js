@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -15,23 +15,78 @@ import CustomInput from "../components/CustomInput";
 import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
+import { useNavigation } from "@react-navigation/native";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
-export default function SignUpScreen() {
-  const [username, setUsername] = useState("");
+export default function SignUpScreen({ route }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordagain, setPasswordagain] = useState("");
+  const [noMatchError, setNoMatchError] = useState(false);
+  const [weakPasswordError, setWeakPasswordError] = useState(false);
+
+  const navigation = useNavigation();
+
+  const app = route.params.app;
+
+  const auth = route.params.auth;
+
+  console.log(auth);
+
+  useEffect(() => {
+    if (password !== passwordagain) {
+      setNoMatchError(true);
+    } else {
+      setNoMatchError(false);
+    }
+    if (password != "" && password.length < 6) {
+      setWeakPasswordError(true);
+    } else {
+      setWeakPasswordError(false);
+    }
+  }, [password, passwordagain]);
 
   const onRegisterPress = () => {
-    console.warn("register pressed");
+    if (noMatchError === true || weakPasswordError === true) {
+      return false;
+    }
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        navigation.navigate("Confirm Email");
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.warn(errorCode);
+        if (errorCode == "auth/email-already-in-use") {
+          navigation.navigate("Error Screen", {
+            header: "Sähköposti käytössä",
+            message:
+              "Sähköpostille löytyi jo olemassaoleva käyttäjätili järjestelmästämme, joten uuden käyttäjätilin luonti epäonnistui. Jos et muista salasanaasi, voit palauttaa sen käyttämällä 'unohdin salasanani'-toimintoa.",
+            navPrimary: "Login",
+            navPrimaryText: "Siirry kirjautumaan",
+          });
+        } else {
+          navigation.navigate("Error Screen", {
+            header: errorCode,
+            message: errorMessage,
+            navPrimary: "Sign Up",
+            navPrimaryText: "Palaa rekisteröitymiseen",
+          });
+        }
+      });
+
+    // send registration
   };
 
   const onReadMorePress = () => {
-    console.warn("read more pressed");
+    navigation.navigate("Terms of Use");
   };
 
   const onLoginPressed = () => {
-    console.warn("login pressed");
+    navigation.navigate("Login");
   };
 
   return (
@@ -53,12 +108,6 @@ export default function SignUpScreen() {
         </Text>
 
         <CustomInput
-          placeholder="Käyttäjätunnus"
-          value={username}
-          setValue={setUsername}
-          icon="user"
-        />
-        <CustomInput
           placeholder="Sähköposti"
           value={email}
           setValue={setEmail}
@@ -71,6 +120,14 @@ export default function SignUpScreen() {
           icon="lock"
           secureTextEntry={true}
         />
+        {weakPasswordError === true ? (
+          <View style={styles.textContainer}>
+            <Text style={{ color: "red" }}>
+              Salasanan on oltava vähintään 6 merkkiä pitkä.
+            </Text>
+          </View>
+        ) : null}
+
         <CustomInput
           placeholder="Salasana (uudelleen)"
           value={passwordagain}
@@ -78,7 +135,11 @@ export default function SignUpScreen() {
           icon="lock"
           secureTextEntry={true}
         />
-
+        {noMatchError === true ? (
+          <View style={styles.textContainer}>
+            <Text style={{ color: "red" }}>Salasanat eivät täsmää!</Text>
+          </View>
+        ) : null}
         <CustomButton
           text="Rekisteröidy"
           bgcolor={colors.darkPrimary}

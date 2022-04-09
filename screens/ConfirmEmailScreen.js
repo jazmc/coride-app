@@ -16,19 +16,24 @@ import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 
+import { useNavigation } from "@react-navigation/native";
+
 export default function ConfirmEmailScreen() {
   const [code, setCode] = useState("");
 
+  const navigation = useNavigation();
+
   const onRegisterPress = () => {
-    console.warn("register pressed");
+    // validate confirmation
+    navigation.navigate("Login");
   };
 
   const onBackToSignUpPressed = () => {
-    console.warn("back 2 sign up pressed");
+    navigation.navigate("Sign Up");
   };
 
   const onEmailFailPressed = () => {
-    console.warn("email fail pressed");
+    navigation.navigate("Sign Up");
   };
 
   return (

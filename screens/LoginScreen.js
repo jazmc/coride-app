@@ -1,36 +1,33 @@
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Platform,
-  Image,
-  useWindowDimensions,
-  ScrollView,
-} from "react-native";
+import { Platform, Image, useWindowDimensions, ScrollView } from "react-native";
 import SvgComponent from "./../assets/Coridesvg";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomInput from "../components/CustomInput";
 import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
+import { useNavigation } from "@react-navigation/native";
+import { auth } from "../firebase";
 
 export default function LoginScreen() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { height } = useWindowDimensions();
+  const navigation = useNavigation();
 
   const onSignInPressed = () => {
-    console.warn("Sign in");
+    // validation
+    //auth.signInWithEmailAndPassword();
+    navigation.navigate("Home");
   };
 
   const onForgotPasswordPressed = () => {
-    console.warn("Forgot password");
+    navigation.navigate("Forgot Password");
   };
 
   const onSignUpPressed = () => {
-    console.warn("Sign Up pressed");
+    navigation.navigate("Sign Up");
   };
 
   return (
@@ -57,10 +54,10 @@ export default function LoginScreen() {
           <SvgComponent style={[styles.logo, { height: height * 0.3 }]} />
         )}
         <CustomInput
-          placeholder="Käyttäjätunnus"
-          value={username}
-          setValue={setUsername}
-          icon="user"
+          placeholder="Sähköpostiosoite"
+          value={email}
+          setValue={setEmail}
+          icon="at"
         />
         <CustomInput
           placeholder="Salasana"
