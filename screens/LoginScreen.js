@@ -14,22 +14,15 @@ import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
-export default function LoginScreen({ route }) {
+export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { height } = useWindowDimensions();
   const navigation = useNavigation();
 
-  const auth = route.params.auth;
-
-  useEffect(() => {
-    if (Object.keys(route.params.authenticatedUser).length > 0) {
-      // if user is logged in, redirect on page load
-      navigation.navigate("Home");
-    }
-  }, []);
+  const auth = getAuth();
 
   const onSignInPressed = () => {
     if (email == "" || password == "") {
@@ -38,15 +31,12 @@ export default function LoginScreen({ route }) {
     }
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        route.params.setAuthenticatedUser(userCredential.user);
         navigation.navigate("Home");
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.warn(errorCode);
-
-        route.params.setAuthenticatedUser({});
 
         if (
           errorCode == "auth/user-not-found" ||

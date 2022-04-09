@@ -16,15 +16,31 @@ import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
-export default function ForgotPasswordScreen() {
+export default function ForgotPasswordScreen({ route }) {
   const [email, setEmail] = useState("");
   const navigation = useNavigation();
 
+  const auth = getAuth();
+
   const onResetPressed = () => {
-    console.warn("reset pw pressed");
     // validate and send to email
-    navigation.navigate("Reset Password");
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        // Password reset email sent!
+        navigation.navigate("Login");
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        navigation.navigate("Error Screen", {
+          header: errorCode,
+          message: errorMessage,
+          navPrimary: "Login",
+          navPrimaryText: "Takaisin kirjautumissivulle",
+        });
+      });
   };
 
   const onBackToLoginPressed = () => {

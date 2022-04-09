@@ -1,22 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // navigation
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 // screens
 import LoginScreen from "./screens/LoginScreen";
-import WeekCalendar from "./screens/WeekCalendar";
-import ProfileScreen from "./screens/ProfileScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import ConfirmEmailScreen from "./screens/ConfirmEmailScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
-import HomeScreen from "./screens/HomeScreen";
 import TermsOfUse from "./screens/TermsOfUse";
 import ErrorScreen from "./screens/ErrorScreen";
 // firebase imports
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+// navigation components
+import TabNavigator from "./navigation/TabNavigator";
 
 export default function App() {
   const Tab = createBottomTabNavigator();
@@ -30,30 +29,39 @@ export default function App() {
     messagingSenderId: "75453118165",
     appId: "1:75453118165:web:13cf50f7b73bee5f93145c",
   };
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-  const auth = getAuth(app);
+
+  getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+  const auth = getAuth();
   const [authenticatedUser, setAuthenticatedUser] = useState({});
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const authParams = {
-    auth: auth,
     authenticatedUser: authenticatedUser,
-    setAuthenticatedUser: setAuthenticatedUser,
   };
+  const [profileNotices, setProfileNotices] = useState([]);
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setIsLoggedIn(true);
-      // User is signed in, see docs for a list of available properties
-      // https://firebase.google.com/docs/reference/js/firebase.User
-      console.log("User " + user.email + " is signed in");
-      setAuthenticatedUser(user);
-    } else {
-      setIsLoggedIn(false);
-      console.warn("No user signed in");
-      setAuthenticatedUser({});
-    }
-    console.log(authenticatedUser);
-  });
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/firebase.User
+        console.log("User " + user.email + " is signed in");
+        setAuthenticatedUser(user);
+      } else {
+        setIsLoggedIn(false);
+        console.warn("No user signed in");
+        setAuthenticatedUser({});
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    setProfileNotices([
+      !("displayName" in authenticatedUser),
+      !("phoneNumber" in authenticatedUser),
+    ]);
+  }, [authenticatedUser]);
 
   return (
     <NavigationContainer>
@@ -67,7 +75,13 @@ export default function App() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isLoggedIn ? (
           <>
-            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen
+              name="Home"
+              component={TabNavigator}
+              initialParams={{
+                profileNotices: profileNotices,
+              }}
+            />
           </>
         ) : (
           <>

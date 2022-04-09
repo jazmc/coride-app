@@ -19,7 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 export default function HomeScreen() {
   return (
     <View>
-      <Text>Week Calendar</Text>
+      <Text>Home page</Text>
       <StatusBar style="auto" />
     </View>
   );

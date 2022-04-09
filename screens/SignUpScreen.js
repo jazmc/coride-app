@@ -16,7 +16,7 @@ import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function SignUpScreen({ route }) {
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ export default function SignUpScreen({ route }) {
 
   const navigation = useNavigation();
 
-  const auth = route.params.auth;
+  const auth = getAuth();
 
   useEffect(() => {
     if (password !== passwordagain) {
@@ -49,15 +49,12 @@ export default function SignUpScreen({ route }) {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // success -> automatic sign in
-        route.params.setAuthenticatedUser(userCredential.user);
         navigation.navigate("Home");
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.warn(errorCode);
-
-        route.params.setAuthenticatedUser({});
 
         if (errorCode == "auth/email-already-in-use") {
           navigation.navigate("Error Screen", {
