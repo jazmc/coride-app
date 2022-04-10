@@ -35,19 +35,19 @@ export default function App() {
   const auth = getAuth();
   const [authenticatedUser, setAuthenticatedUser] = useState({});
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const authParams = {
-    authenticatedUser: authenticatedUser,
-  };
+
   const [profileNotices, setProfileNotices] = useState([]);
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        setIsLoggedIn(true);
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/firebase.User
         console.log("User " + user.email + " is signed in");
         setAuthenticatedUser(user);
+        if (user.emailVerified === true) {
+          setIsLoggedIn(true);
+        }
       } else {
         setIsLoggedIn(false);
         console.warn("No user signed in");
@@ -58,20 +58,13 @@ export default function App() {
 
   useEffect(() => {
     setProfileNotices([
-      !("displayName" in authenticatedUser),
-      !("phoneNumber" in authenticatedUser),
+      !("displayName" in authenticatedUser == null),
+      !("phoneNumber" in authenticatedUser == null),
     ]);
   }, [authenticatedUser]);
 
   return (
     <NavigationContainer>
-      {/*<Tab.Navigator>
-        <Tab.Screen name="Calendar" component={ConfirmEmailScreen} />
-        <Tab.Screen name="Profile" component={SignUpScreen} />
-        <Tab.Screen name="Home" component={LoginScreen} />
-        <Tab.Screen name="FP" component={ForgotPasswordScreen} />
-        <Tab.Screen name="RP" component={ResetPasswordScreen} />
-      </Tab.Navigator>*/}
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isLoggedIn ? (
           <>
@@ -87,15 +80,12 @@ export default function App() {
           <>
             <Stack.Screen
               name="Login"
-              component={LoginScreen}
-              initialParams={authParams}
+              children={() => <LoginScreen setIsLoggedIn={setIsLoggedIn} />}
             />
             <Stack.Screen
               name="Sign Up"
-              component={SignUpScreen}
-              initialParams={authParams}
+              children={() => <SignUpScreen setIsLoggedIn={setIsLoggedIn} />}
             />
-            <Stack.Screen name="Confirm Email" component={ConfirmEmailScreen} />
             <Stack.Screen name="Terms of Use" component={TermsOfUse} />
             <Stack.Screen
               name="Forgot Password"
@@ -104,6 +94,12 @@ export default function App() {
             <Stack.Screen
               name="Reset Password"
               component={ResetPasswordScreen}
+            />
+            <Stack.Screen
+              name="Confirm Email"
+              children={() => (
+                <ConfirmEmailScreen setIsLoggedIn={setIsLoggedIn} />
+              )}
             />
             <Stack.Screen name="Error Screen" component={ErrorScreen} />
           </>

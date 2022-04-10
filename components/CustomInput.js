@@ -11,6 +11,7 @@ export default function CustomInput({
   secureTextEntry,
   icon,
   color,
+  keyboardType = "default",
 }) {
   return (
     <View style={styles.inputContainer}>
@@ -32,6 +33,9 @@ export default function CustomInput({
         style={[styles.input, Platform.OS == "web" ? { outline: "none" } : {}]}
         secureTextEntry={secureTextEntry}
         returnKeyType="done"
+        keyboardType={keyboardType}
+        autoCapitalize="none"
+        autoCorrect={false}
       />
     </View>
   );

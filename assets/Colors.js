@@ -7,4 +7,5 @@ export const colors = {
   lightSecondary: "#ffddd2",
   offWhite: "#edf6f9",
   greyish: "#6e8077",
+  blackish: "#000",
 };

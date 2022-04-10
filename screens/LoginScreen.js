@@ -16,7 +16,7 @@ import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
-export default function LoginScreen() {
+export default function LoginScreen({ setIsLoggedIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { height } = useWindowDimensions();
@@ -31,7 +31,12 @@ export default function LoginScreen() {
     }
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        navigation.navigate("Home");
+        if (userCredential.user.emailVerified === true) {
+          setIsLoggedIn(true);
+          navigation.navigate("Home");
+        } else {
+          navigation.navigate("Confirm Email");
+        }
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -104,6 +109,7 @@ export default function LoginScreen() {
           value={email}
           setValue={setEmail}
           icon="at"
+          keyboardType="email-address"
         />
         <CustomInput
           placeholder="Salasana"

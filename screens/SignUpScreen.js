@@ -16,9 +16,13 @@ import styles from "../assets/Styles";
 import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 
-export default function SignUpScreen({ route }) {
+export default function SignUpScreen({ setIsLoggedIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordagain, setPasswordagain] = useState("");
@@ -49,7 +53,14 @@ export default function SignUpScreen({ route }) {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // success -> automatic sign in
-        navigation.navigate("Home");
+        sendEmailVerification(userCredential.user)
+          .then(() => {
+            // Email verification sent!
+            setIsLoggedIn(false);
+          })
+          .then(() => {
+            navigation.navigate("Confirm Email");
+          });
       })
       .catch((error) => {
         const errorCode = error.code;

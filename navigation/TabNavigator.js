@@ -1,17 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StyleSheet, Text, View } from "react-native";
 import HomeScreen from "../screens/HomeScreen";
 import WeekCalendar from "../screens/WeekCalendar";
 import ProfileScreen from "../screens/ProfileScreen";
-import { getAuth } from "firebase/auth";
 
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { colors } from "../assets/Colors";
 
 export default function TabNavigator({ route }) {
   const Tab = createBottomTabNavigator();
-  const auth = getAuth();
 
   return (
     <Tab.Navigator
