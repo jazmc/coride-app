@@ -3,6 +3,13 @@ import { StyleSheet } from "react-native";
 import { colors } from "./Colors";
 
 const styles = StyleSheet.create({
+  tabViewContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+    margin: 0,
+    width: "100%",
+    fontSize: 15,
+  },
   scroll: {
     flex: 1,
     padding: 0,

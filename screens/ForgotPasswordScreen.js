@@ -18,7 +18,7 @@ import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
-export default function ForgotPasswordScreen({ route }) {
+export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
   const navigation = useNavigation();
 

@@ -8,13 +8,19 @@ export default function CustomInput({
   value,
   setValue,
   placeholder,
-  secureTextEntry,
+  secureTextEntry = false,
   icon,
   color,
   keyboardType = "default",
+  outline,
 }) {
   return (
-    <View style={styles.inputContainer}>
+    <View
+      style={[
+        styles.inputContainer,
+        outline ? { borderColor: outline, borderWidth: 2 } : {},
+      ]}
+    >
       {icon ? (
         <Icon
           name={icon}
