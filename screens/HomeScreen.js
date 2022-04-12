@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   View,
@@ -16,11 +16,36 @@ import { colors } from "../assets/Colors";
 import CustomButton from "../components/CustomButton";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 export default function HomeScreen() {
   const auth = getAuth();
-
+  const db = getFirestore();
   const user = auth.currentUser;
+
+  // sivunlatauksessa tehdään seuraavaa:
+  useEffect(async () => {
+    const junctionsUsersStables = await getDocs(
+      query(
+        collection(db, "junction_users_stables"),
+        where("uid", "==", user.uid)
+      )
+    );
+
+    junctionsUsersStables.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data());
+    });
+  }, []);
+
+  // kaikki tallit joihin käyttäjä on liittynyt
+
+  console.log(user.uid);
 
   const [stableKey, setStableKey] = useState("");
 
