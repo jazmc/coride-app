@@ -34,6 +34,8 @@ export default function HomeScreen({
   setUsersStables,
   currentStable,
   setCurrentStable,
+  drawerOpen,
+  setDrawerOpen,
 }) {
   const auth = getAuth();
   const db = getFirestore();
@@ -93,6 +95,8 @@ export default function HomeScreen({
             : "Hei, ") +
           (user.displayName != null ? user.displayName : "CoRider" + "!")
         }
+        drawerOpen={drawerOpen}
+        setDrawerOpen={setDrawerOpen}
       />
 
       <View style={styles.textContainer}>

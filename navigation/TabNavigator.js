@@ -4,6 +4,8 @@ import { StyleSheet, Text, View } from "react-native";
 import HomeScreen from "../screens/HomeScreen";
 import WeekCalendar from "../screens/WeekCalendar";
 import ProfileStack from "../navigation/ProfileStack";
+import StableList from "../components/StableList";
+import SideMenu from "react-native-side-menu-updated";
 
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { colors } from "../assets/Colors";
@@ -18,6 +20,7 @@ export default function TabNavigator({ route }) {
   const onItemSelected = (item) => {
     setDrawerOpen(false);
   };
+
   const menu = (
     <StableList
       onItemSelected={onItemSelected}
@@ -66,7 +69,24 @@ export default function TabNavigator({ route }) {
       />
       <Tab.Screen
         name="Calendar"
-        component={WeekCalendar}
+        children={() => (
+          <SideMenu
+            menu={menu}
+            menuPosition="right"
+            isOpen={drawerOpen}
+            onChange={(drawerOpen) => setDrawerOpen(drawerOpen)}
+            overlayColor="rgba(255,255,255,.8)"
+          >
+            <WeekCalendar
+              usersStables={usersStables}
+              setUsersStables={setUsersStables}
+              drawerOpen={drawerOpen}
+              setDrawerOpen={setDrawerOpen}
+              currentStable={currentStable}
+              setCurrentStable={setCurrentStable}
+            />
+          </SideMenu>
+        )}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Icon name="calendar-alt" color={color} size={size} solid />
