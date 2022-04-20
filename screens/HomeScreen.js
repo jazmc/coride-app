@@ -20,32 +20,60 @@ import {
   getFirestore,
   collection,
   query,
+  doc,
   where,
   getDocs,
+  getDoc,
+  orderBy,
 } from "firebase/firestore";
+import { getDocById } from "../assets/HelperFunctions";
+import TabHeader from "../components/TabHeader";
 
-export default function HomeScreen() {
+export default function HomeScreen({
+  usersStables,
+  setUsersStables,
+  currentStable,
+  setCurrentStable,
+}) {
   const auth = getAuth();
   const db = getFirestore();
   const user = auth.currentUser;
 
   // sivunlatauksessa tehdään seuraavaa:
   useEffect(async () => {
+    // pengo käyttäjän profiilin tiedot
+    const userProfile = await getDocById(db, "users", user.uid);
+
+    // pengo käyttäjän tallit
     const junctionsUsersStables = await getDocs(
       query(
         collection(db, "junction_users_stables"),
-        where("uid", "==", user.uid)
+        where("uid", "==", user.uid),
+        orderBy("primary", "desc")
       )
     );
 
-    junctionsUsersStables.forEach((doc) => {
-      console.log(doc.id, " => ", doc.data());
+    junctionsUsersStables.forEach(async (doc) => {
+      const stable = await getDocById(db, "stables", doc.data().stable_id);
+      setUsersStables((usersStables) => [
+        ...usersStables,
+        { id: doc.data().stable_id, data: stable },
+      ]);
+      if (
+        "favorite_stable" in userProfile &&
+        doc.data().stable_id == userProfile.favorite_stable
+      ) {
+        setCurrentStable({ id: doc.data().stable_id, data: stable });
+      } else if (
+        !"favorite_stable" in userProfile &&
+        Object.keys(currentStable).length == 0
+      ) {
+        setCurrentStable({ id: doc.data().stable_id, data: stable });
+      }
     });
   }, []);
 
   // kaikki tallit joihin käyttäjä on liittynyt
-
-  console.log(user.uid);
 
   const [stableKey, setStableKey] = useState("");
 
@@ -53,23 +81,19 @@ export default function HomeScreen() {
     <ScrollView
       style={[
         styles.tabViewContainer,
-        Platform.OS == "ios" ? { paddingTop: 30 } : null,
+        Platform.OS == "ios" ? { paddingTop: styles.iosPadding } : null,
       ]}
     >
-      <Text style={[styles.h2Text, { color: colors.darkPrimary }]}>
-        {new Date().getHours() < 10 && new Date().getHours() >= 4
-          ? "Huomenta"
-          : new Date().getHours() > 18
-          ? "Iltaa"
-          : "Hei"}
-        ,{" "}
-        {user.displayName != null ? (
-          user.displayName
-        ) : (
-          <Text style={{ fontStyle: "italic" }}>nimetön CoRider</Text>
-        )}
-        !
-      </Text>
+      <TabHeader
+        header={
+          (new Date().getHours() < 10 && new Date().getHours() >= 4
+            ? "Huomenta, "
+            : new Date().getHours() > 18
+            ? "Iltaa, "
+            : "Hei, ") +
+          (user.displayName != null ? user.displayName : "CoRider" + "!")
+        }
+      />
 
       <View style={styles.textContainer}>
         <Text style={{ color: colors.blackish }}>
@@ -77,6 +101,9 @@ export default function HomeScreen() {
           CoRide-jäsentallille. Aloita matkasi CoRiderina syöttämällä
           talliavain, jonka saat tallin henkilökunnalta.
         </Text>
+        {usersStables.map((stable, index) => (
+          <Text key={index}>{stable.name}</Text>
+        ))}
       </View>
       <CustomInput
         value={stableKey}

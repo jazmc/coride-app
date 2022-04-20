@@ -3,13 +3,29 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StyleSheet, Text, View } from "react-native";
 import HomeScreen from "../screens/HomeScreen";
 import WeekCalendar from "../screens/WeekCalendar";
-import ProfileScreen from "../screens/ProfileScreen";
+import ProfileStack from "../navigation/ProfileStack";
 
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { colors } from "../assets/Colors";
 
 export default function TabNavigator({ route }) {
   const Tab = createBottomTabNavigator();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const [usersStables, setUsersStables] = useState([]);
+  const [currentStable, setCurrentStable] = useState({});
+
+  const onItemSelected = (item) => {
+    setDrawerOpen(false);
+  };
+  const menu = (
+    <StableList
+      onItemSelected={onItemSelected}
+      usersStables={usersStables}
+      currentStable={currentStable}
+      setCurrentStable={setCurrentStable}
+    />
+  );
 
   return (
     <Tab.Navigator
@@ -24,7 +40,24 @@ export default function TabNavigator({ route }) {
     >
       <Tab.Screen
         name="Home2"
-        component={HomeScreen}
+        children={() => (
+          <SideMenu
+            menu={menu}
+            menuPosition="right"
+            isOpen={drawerOpen}
+            onChange={(drawerOpen) => setDrawerOpen(drawerOpen)}
+            overlayColor="rgba(255,255,255,.8)"
+          >
+            <HomeScreen
+              usersStables={usersStables}
+              setUsersStables={setUsersStables}
+              drawerOpen={drawerOpen}
+              setDrawerOpen={setDrawerOpen}
+              currentStable={currentStable}
+              setCurrentStable={setCurrentStable}
+            />
+          </SideMenu>
+        )}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Icon name="home" color={color} size={size} solid />
@@ -42,7 +75,16 @@ export default function TabNavigator({ route }) {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        children={() => (
+          <ProfileStack
+            usersStables={usersStables}
+            setUsersStables={setUsersStables}
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+            setCurrentStable={setCurrentStable}
+            currentStable={currentStable}
+          />
+        )}
         options={{
           tabBarBadge: route.params.profileNotices.filter(
             (notice) => notice === true
@@ -54,6 +96,7 @@ export default function TabNavigator({ route }) {
           tabBarIcon: ({ color, size }) => (
             <Icon name="user" color={color} size={size} solid />
           ),
+          headerShown: false,
         }}
       />
     </Tab.Navigator>

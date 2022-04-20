@@ -3,12 +3,20 @@ import { StyleSheet } from "react-native";
 import { colors } from "./Colors";
 
 const styles = StyleSheet.create({
+  drawer: {
+    flex: 1,
+    backgroundColor: colors.lightPrimary,
+  },
+  drawerContent: {
+    margin: 10,
+  },
   tabViewContainer: {
     flex: 1,
     paddingHorizontal: 10,
     margin: 0,
     width: "100%",
     fontSize: 15,
+    backgroundColor: colors.background,
   },
   scroll: {
     flex: 1,
@@ -70,6 +78,42 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 10,
   },
+  h3Text: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 10,
+  },
+  stableListContainer: {
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 5,
+    shadowOpacity: 0.7,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: "#000",
+    shadowRadius: 5,
+  },
+  stableListItem: {
+    paddingVertical: 5,
+    width: "120%",
+    height: "120%",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexDirection: "row",
+  },
+  stableListIcon: {
+    borderRadius: "50%",
+    width: 50,
+    height: 50,
+    marginLeft: 35,
+    marginRight: 10,
+  },
+  stableListText: {
+    color: colors.offWhite,
+    fontSize: 20,
+    lineHeight: 0,
+    flex: 1,
+  },
   textContainer: {
     width: "100%",
     justifyContent: "flex-start",
@@ -78,6 +122,12 @@ const styles = StyleSheet.create({
   link: {
     color: colors.darkSecondary,
   },
+  rowFlex: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  iosPadding: 40,
 });
 
 export default styles;
