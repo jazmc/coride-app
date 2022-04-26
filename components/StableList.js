@@ -72,13 +72,13 @@ export default function StableList({
             onLongPress={() => updateFavoriteStable(stable.id)}
           >
             <ImageBackground
-              source={stable.data.image}
+              source={{ uri: stable.data.image }}
               imageStyle={{ resizeMode: "cover" }}
               blurRadius={5}
               style={styles.stableListItem}
             >
               <Image
-                source={stable.data.image}
+                source={{ uri: stable.data.image }}
                 style={styles.stableListIcon}
                 resizeMode="cover"
               />
@@ -88,7 +88,7 @@ export default function StableList({
                 size={20}
                 color={colors.offWhite}
                 solid={favoriteStable != null && favoriteStable == stable.id}
-                style={{ textAlign: "right", marginRight: 35 }}
+                style={{ textAlign: "right", marginRight: 10 }}
                 onPress={() => updateFavoriteStable(stable.id)}
               />
             </ImageBackground>

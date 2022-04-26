@@ -7,8 +7,54 @@ import {
   CalendarProvider,
   TimelineProps,
   CalendarUtils,
+  LocaleConfig,
+  WeekCalendar,
 } from "react-native-calendars";
 import _ from "lodash";
+import { colors } from "../assets/Colors";
+
+LocaleConfig.locales["fi"] = {
+  monthNames: [
+    "Tammikuu",
+    "Helmikuu",
+    "Maaliskuu",
+    "Huhtikuu",
+    "Toukokuu",
+    "Kesäkuu",
+    "Heinäkuu",
+    "Elokuu",
+    "Syyskuu",
+    "Lokakuu",
+    "Marraskuu",
+    "Joulukuu",
+  ],
+  monthNamesShort: [
+    "Tammi",
+    "Helmi",
+    "Maalis",
+    "Huhti",
+    "Touko",
+    "Kesä",
+    "Heinä",
+    "Elo",
+    "Syys",
+    "Loka",
+    "Marras",
+    "Joulu",
+  ],
+  dayNames: [
+    "Sunnuntai",
+    "Maanantai",
+    "Tiistai",
+    "Keskiviikko",
+    "Torstai",
+    "Perjantai",
+    "Lauantai",
+  ],
+  dayNamesShort: ["su", "ma", "ti", "ke", "to", "pe", "la"],
+  today: "Tänään",
+};
+LocaleConfig.defaultLocale = "fi";
 
 const INITIAL_TIME = { hour: 9, minutes: 0 };
 const today = new Date();
@@ -226,8 +272,8 @@ export default function CalendarView() {
     onBackgroundLongPress: createNewEvent,
     onBackgroundLongPressOut: approveNewEvent,
     // scrollToFirst: true,
-    // start: 0,
-    // end: 24,
+    //start: 0,
+    //end: 24,
     unavailableHours: [
       { start: 0, end: 6 },
       { start: 22, end: 24 },
@@ -243,19 +289,42 @@ export default function CalendarView() {
       onMonthChange={onMonthChange}
       showTodayButton
       disabledOpacity={0.6}
+      theme={{
+        todayButtonTextColor: colors.offWhite,
+        weekVerticalMargin: 0,
+        "stylesheet.calendar.header": {
+          week: { marginVertical: 0, marginTop: 0 },
+        },
+      }}
+      todayButtonStyle={{
+        backgroundColor: colors.darkPrimary,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingRight: 20,
+      }}
     >
-      <ExpandableCalendar
+      <WeekCalendar
         firstDay={1}
         markedDates={marked}
         leftArrowImageSource={{ uri: require("../assets/previous.png") }}
         rightArrowImageSource={{ uri: require("../assets/next.png") }}
+        allowShadow={true}
+        theme={{
+          weekVerticalMargin: 0,
+          "stylesheet.calendar.header": {
+            week: { marginVertical: 0, marginTop: 0 },
+          },
+          selectedDayBackgroundColor: colors.darkSecondary,
+          dotColor: colors.darkSecondary,
+          todayTextColor: colors.darkSecondary,
+        }}
       />
       <TimelineList
         events={eventsByDate}
         timelineProps={timelineProps}
         showNowIndicator
-        // scrollToNow
-        scrollToFirst
+        scrollToNow
         initialTime={INITIAL_TIME}
       />
     </CalendarProvider>
