@@ -14,7 +14,11 @@ import TabHeader from "../components/TabHeader";
 
 import { useNavigation } from "@react-navigation/native";
 
-export default function ProfileScreen({ drawerOpen, setDrawerOpen }) {
+export default function ProfileScreen({
+  drawerOpen,
+  setDrawerOpen,
+  currentStable,
+}) {
   const auth = getAuth();
   const navigation = useNavigation();
 
@@ -39,6 +43,7 @@ export default function ProfileScreen({ drawerOpen, setDrawerOpen }) {
         header="Profiili"
         drawerOpen={drawerOpen}
         setDrawerOpen={setDrawerOpen}
+        currentStable={currentStable}
       />
       <CustomButton
         text="Kirjaudu ulos"

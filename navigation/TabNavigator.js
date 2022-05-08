@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, Dimensions } from "react-native";
 import HomeScreen from "../screens/HomeScreen";
 import WeekCalendar from "../screens/WeekCalendar";
 import ProfileStack from "../navigation/ProfileStack";
@@ -27,9 +27,11 @@ export default function TabNavigator({ route }) {
       usersStables={usersStables}
       currentStable={currentStable}
       setCurrentStable={setCurrentStable}
+      setUsersStables={setUsersStables}
     />
   );
 
+  console.log(currentStable);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -43,8 +45,12 @@ export default function TabNavigator({ route }) {
     >
       <Tab.Screen
         name="Home2"
+        listeners={() => {
+          setDrawerOpen(false);
+        }}
         children={() => (
           <SideMenu
+            openMenuOffset={Dimensions.get("window").width - 50}
             menu={menu}
             menuPosition="right"
             isOpen={drawerOpen}
@@ -67,33 +73,44 @@ export default function TabNavigator({ route }) {
           ),
         }}
       />
+      {Object.keys(currentStable).length > 0 ? (
+        <Tab.Screen
+          listeners={() => {
+            setDrawerOpen(false);
+          }}
+          name="Calendar"
+          children={() => (
+            <SideMenu
+              openMenuOffset={Dimensions.get("window").width - 50}
+              menu={menu}
+              menuPosition="right"
+              isOpen={drawerOpen}
+              onChange={(drawerOpen) => setDrawerOpen(drawerOpen)}
+              overlayColor="rgba(255,255,255,.8)"
+            >
+              <WeekCalendar
+                usersStables={usersStables}
+                setUsersStables={setUsersStables}
+                drawerOpen={drawerOpen}
+                setDrawerOpen={setDrawerOpen}
+                currentStable={currentStable}
+                setCurrentStable={setCurrentStable}
+              />
+            </SideMenu>
+          )}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="calendar-alt" color={color} size={size} solid />
+            ),
+          }}
+        />
+      ) : (
+        <></>
+      )}
       <Tab.Screen
-        name="Calendar"
-        children={() => (
-          <SideMenu
-            menu={menu}
-            menuPosition="right"
-            isOpen={drawerOpen}
-            onChange={(drawerOpen) => setDrawerOpen(drawerOpen)}
-            overlayColor="rgba(255,255,255,.8)"
-          >
-            <WeekCalendar
-              usersStables={usersStables}
-              setUsersStables={setUsersStables}
-              drawerOpen={drawerOpen}
-              setDrawerOpen={setDrawerOpen}
-              currentStable={currentStable}
-              setCurrentStable={setCurrentStable}
-            />
-          </SideMenu>
-        )}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="calendar-alt" color={color} size={size} solid />
-          ),
+        listeners={() => {
+          setDrawerOpen(false);
         }}
-      />
-      <Tab.Screen
         name="Profile"
         children={() => (
           <ProfileStack

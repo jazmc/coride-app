@@ -21,8 +21,12 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
 } from "firebase/auth";
+import { setUsersNames } from "../assets/HelperFunctions";
+import { getFirestore } from "firebase/firestore";
 
 export default function SignUpScreen({ setIsLoggedIn }) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordagain, setPasswordagain] = useState("");
@@ -31,6 +35,7 @@ export default function SignUpScreen({ setIsLoggedIn }) {
 
   const navigation = useNavigation();
 
+  const db = getFirestore();
   const auth = getAuth();
 
   useEffect(() => {
@@ -57,6 +62,9 @@ export default function SignUpScreen({ setIsLoggedIn }) {
           .then(() => {
             // Email verification sent!
             setIsLoggedIn(false);
+          })
+          .then(() => {
+            setUsersNames(db, userCredential.user.uid, firstName, lastName);
           })
           .then(() => {
             navigation.navigate("Confirm Email");
@@ -112,6 +120,20 @@ export default function SignUpScreen({ setIsLoggedIn }) {
         <Text style={[styles.titleText, { color: colors.darkPrimary }]}>
           Rekisteröidy
         </Text>
+
+        <CustomInput
+          placeholder="Etunimi tai kutsumanimi"
+          value={firstName}
+          setValue={setFirstName}
+          icon="user"
+        />
+
+        <CustomInput
+          placeholder="Sukunimi"
+          value={lastName}
+          setValue={setLastName}
+          icon="user"
+        />
 
         <CustomInput
           placeholder="Sähköposti"

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, Dimensions } from "react-native";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -39,6 +39,7 @@ export default function ProfileStack({
         name="ProfilePage"
         children={() => (
           <SideMenu
+            openMenuOffset={Dimensions.get("window").width - 50}
             menu={menu}
             menuPosition="right"
             isOpen={drawerOpen}
@@ -50,6 +51,7 @@ export default function ProfileStack({
               setUsersStables={setUsersStables}
               drawerOpen={drawerOpen}
               setDrawerOpen={setDrawerOpen}
+              currentStable={currentStable}
             />
           </SideMenu>
         )}

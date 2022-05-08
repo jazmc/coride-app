@@ -30,13 +30,14 @@ export default function WeekCalendar({
         ]}
       >
         <TabHeader
-          header="Tuntikalenteri"
+          header={currentStable.data.name}
           drawerOpen={drawerOpen}
           setDrawerOpen={setDrawerOpen}
+          currentStable={currentStable}
         />
       </View>
       <View style={{ flex: 5, backgroundColor: colors.background }}>
-        <CalendarView />
+        <CalendarView currentStable={currentStable} />
       </View>
       <StatusBar style="auto" />
     </>

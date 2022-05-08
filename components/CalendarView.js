@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import {
   ExpandableCalendar,
@@ -11,7 +11,10 @@ import {
   WeekCalendar,
 } from "react-native-calendars";
 import _ from "lodash";
+import { getEventsByDateAndId } from "../assets/HelperFunctions";
 import { colors } from "../assets/Colors";
+import { getFirestore } from "firebase/firestore";
+import moment from "moment";
 
 LocaleConfig.locales["fi"] = {
   monthNames: [
@@ -69,132 +72,184 @@ const EVENTS = [
     end: `${getDate(-1)} 12:00:00`,
     title: "Merge Request to React Native Calendars",
     summary: "Merge Timeline Calendar to React Native Calendars",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate()} 01:15:00`,
     end: `${getDate()} 02:30:00`,
     title: "Meeting A",
     summary: "Summary for meeting A",
-    color: "#e6add8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate()} 01:30:00`,
     end: `${getDate()} 02:30:00`,
     title: "Meeting B",
     summary: "Summary for meeting B",
-    color: "#e6add8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate()} 01:45:00`,
     end: `${getDate()} 02:45:00`,
     title: "Meeting C",
     summary: "Summary for meeting C",
-    color: "#e6add8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate()} 02:40:00`,
     end: `${getDate()} 03:10:00`,
     title: "Meeting D",
     summary: "Summary for meeting D",
-    color: "#e6add8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate()} 02:50:00`,
     end: `${getDate()} 03:20:00`,
     title: "Meeting E",
     summary: "Summary for meeting E",
-    color: "#e6add8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate()} 04:30:00`,
     end: `${getDate()} 05:30:00`,
     title: "Meeting F",
     summary: "Summary for meeting F",
-    color: "#e6add8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(1)} 00:30:00`,
     end: `${getDate(1)} 01:30:00`,
     title: "Visit Grand Mother",
     summary: "Visit Grand Mother and bring some fruits.",
-    color: "#ade6d8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(1)} 02:30:00`,
     end: `${getDate(1)} 03:20:00`,
     title: "Meeting with Prof. Behjet Zuhaira",
     summary: "Meeting with Prof. Behjet at 130 in her office.",
-    color: "#e6add8",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(1)} 04:10:00`,
     end: `${getDate(1)} 04:40:00`,
     title: "Tea Time with Dr. Hasan",
     summary: "Tea Time with Dr. Hasan, Talk about Project",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(1)} 01:05:00`,
     end: `${getDate(1)} 01:35:00`,
     title: "Dr. Mariana Joseph",
     summary: "3412 Piedmont Rd NE, GA 3032",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(1)} 14:30:00`,
     end: `${getDate(1)} 16:30:00`,
     title: "Meeting Some Friends in ARMED",
     summary: "Arsalan, Hasnaat, Talha, Waleed, Bilal",
-    color: "#d8ade6",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(2)} 01:40:00`,
     end: `${getDate(2)} 02:25:00`,
     title: "Meet Sir Khurram Iqbal",
     summary: "Computer Science Dept. Comsats Islamabad",
-    color: "#e6bcad",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(2)} 04:10:00`,
     end: `${getDate(2)} 04:40:00`,
     title: "Tea Time with Colleagues",
     summary: "WeRplay",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(2)} 00:45:00`,
     end: `${getDate(2)} 01:45:00`,
     title: "Lets Play Apex Legends",
     summary: "with Boys at Work",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(2)} 11:30:00`,
     end: `${getDate(2)} 12:30:00`,
     title: "Dr. Mariana Joseph",
     summary: "3412 Piedmont Rd NE, GA 3032",
+    color: colors.lightSecondary,
   },
   {
     start: `${getDate(4)} 12:10:00`,
     end: `${getDate(4)} 13:45:00`,
     title: "Merge Request to React Native Calendars",
     summary: "Merge Timeline Calendar to React Native Calendars",
+    color: colors.lightSecondary,
   },
 ];
 
-export default function CalendarView() {
+export default function CalendarView({ currentStable }) {
   const [currentDate, setCurrentDate] = useState(getDate());
-  const [events, setEvents] = useState(EVENTS);
-  const [eventsByDate, setEventsByDate] = useState(
-    _.groupBy(EVENTS, (e) => CalendarUtils.getCalendarDateString(e.start))
-  );
+  const [parsedEvents, setParsedEvents] = useState([]);
+  const [usedEventIds, setUsedEventIds] = useState([]);
+  const [eventsByDate, setEventsByDate] = useState([]);
+  const [marked, setMarked] = useState({});
 
-  const marked = {
-    [`${getDate(-1)}`]: { marked: true },
-    [`${getDate()}`]: { marked: true },
-    [`${getDate(1)}`]: { marked: true },
-    [`${getDate(2)}`]: { marked: true },
-    [`${getDate(4)}`]: { marked: true },
-  };
+  const db = getFirestore();
+
+  useEffect(() => {
+    setCurrentDate(getDate());
+    setParsedEvents([]);
+    setUsedEventIds([]);
+    setMarked({});
+  }, [currentStable]);
+
+  useEffect(async () => {
+    const events = await getEventsByDateAndId(
+      db,
+      currentStable.id,
+      currentDate
+    );
+    events.forEach((element) => {
+      // jos event ei ole vielä kalenterissa:
+      if (usedEventIds.includes(element.id) === false) {
+        setParsedEvents([
+          ...parsedEvents,
+          {
+            id: element.id,
+            start: moment
+              .unix(element.data.startTime.seconds)
+              .format("YYYY-MM-DD HH:mm:ss"),
+            end: moment
+              .unix(element.data.endTime.seconds)
+              .format("YYYY-MM-DD HH:mm:ss"),
+            title: "TODO: otsikko",
+            summary: element.data.description,
+          },
+        ]);
+        // lisätään id käytettyihin ettei tuu tuplia
+        setUsedEventIds([...usedEventIds, element.id]);
+        // lisätään täppä kalenterin pvm:ään
+        setMarked({
+          ...marked,
+          [`${moment
+            .unix(element.data.startTime.seconds)
+            .format("YYYY-MM-DD")}`]: {
+            marked: true,
+          },
+        });
+      }
+    });
+    // parsi eventit kalenteriin
+    setEventsByDate(
+      _.groupBy(parsedEvents, (e) =>
+        CalendarUtils.getCalendarDateString(e.start)
+      )
+    );
+  }, [currentDate]);
 
   const onDateChanged = (date) => {
-    // console.warn('TimelineCalendarScreen onDateChanged: ', date, updateSource);
+    //console.warn("TimelineCalendarScreen onDateChanged: ", date, updateSource);
     // fetch and set data for date + week ahead
     setCurrentDate(date);
   };
@@ -254,7 +309,7 @@ export default function CalendarView() {
             if (draftEvent) {
               draftEvent.id = undefined;
               draftEvent.title = eventTitle ?? "New Event";
-              draftEvent.color = "#d8ade6";
+              draftEvent.color = colors.lightSecondary;
               eventsByDate[timeObject.date] = [
                 ...eventsByDate[timeObject.date],
               ];
@@ -271,7 +326,7 @@ export default function CalendarView() {
     format24h: true,
     onBackgroundLongPress: createNewEvent,
     onBackgroundLongPressOut: approveNewEvent,
-    // scrollToFirst: true,
+    scrollToFirst: true,
     //start: 0,
     //end: 24,
     unavailableHours: [
@@ -324,7 +379,7 @@ export default function CalendarView() {
         events={eventsByDate}
         timelineProps={timelineProps}
         showNowIndicator
-        scrollToNow
+        scrollToFirst
         initialTime={INITIAL_TIME}
       />
     </CalendarProvider>

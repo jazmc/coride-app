@@ -26,7 +26,11 @@ import {
   getDoc,
   orderBy,
 } from "firebase/firestore";
-import { getDocById } from "../assets/HelperFunctions";
+import {
+  getDocById,
+  joinStableWithKey,
+  returnUsersStableDocs,
+} from "../assets/HelperFunctions";
 import TabHeader from "../components/TabHeader";
 
 export default function HomeScreen({
@@ -40,44 +44,56 @@ export default function HomeScreen({
   const auth = getAuth();
   const db = getFirestore();
   const user = auth.currentUser;
+  const [userProfile, setUserProfile] = useState({});
 
   // sivunlatauksessa tehdään seuraavaa:
   useEffect(async () => {
     // pengo käyttäjän profiilin tiedot
-    const userProfile = await getDocById(db, "users", user.uid);
+    const profileDoc = await getDocById(db, "users", user.uid);
+    setUserProfile(profileDoc);
 
     // pengo käyttäjän tallit
-    const junctionsUsersStables = await getDocs(
-      query(
-        collection(db, "junction_users_stables"),
-        where("uid", "==", user.uid),
-        orderBy("primary", "desc")
-      )
-    );
+    const junctionsUsersStables = await returnUsersStableDocs(db, user.uid);
 
+    updateCurrentStable(junctionsUsersStables, profileDoc);
+  }, []);
+
+  const updateCurrentStable = (junctionsUsersStables, profileDoc) => {
     junctionsUsersStables.forEach(async (doc) => {
       const stable = await getDocById(db, "stables", doc.data().stable_id);
       setUsersStables((usersStables) => [
         ...usersStables,
         { id: doc.data().stable_id, data: stable },
       ]);
+      console.log("haara1");
       if (
-        "favorite_stable" in userProfile &&
-        doc.data().stable_id == userProfile.favorite_stable
+        "favorite_stable" in profileDoc &&
+        doc.data().stable_id == profileDoc.favorite_stable
       ) {
+        console.log("haara2");
         setCurrentStable({ id: doc.data().stable_id, data: stable });
       } else if (
-        !"favorite_stable" in userProfile &&
+        "favorite_stable" in profileDoc === false &&
         Object.keys(currentStable).length == 0
       ) {
+        console.log("haara3");
         setCurrentStable({ id: doc.data().stable_id, data: stable });
       }
     });
-  }, []);
+  };
+
+  const joinStableAndUpdate = async () => {
+    joinStableWithKey(db, stableKey, user.uid);
+    const junctionsUsersStables = await returnUsersStableDocs(db, user.uid);
+    updateCurrentStable(junctionsUsersStables, userProfile);
+  };
 
   // kaikki tallit joihin käyttäjä on liittynyt
 
   const [stableKey, setStableKey] = useState("");
+
+  console.log("currentStable:");
+  console.log(currentStable);
 
   return (
     <ScrollView
@@ -93,10 +109,13 @@ export default function HomeScreen({
             : new Date().getHours() > 18
             ? "Iltaa, "
             : "Hei, ") +
-          (user.displayName != null ? user.displayName : "CoRider" + "!")
+          (userProfile.first_name != null
+            ? userProfile.first_name + "!"
+            : "CoRider" + "!")
         }
         drawerOpen={drawerOpen}
         setDrawerOpen={setDrawerOpen}
+        currentStable={currentStable}
       />
 
       <View style={styles.textContainer}>
@@ -116,6 +135,15 @@ export default function HomeScreen({
         icon="key"
         outline={colors.darkSecondary}
       />
+      {stableKey != "" ? (
+        <CustomButton
+          text="Liity"
+          bgcolor={colors.darkPrimary}
+          onPress={joinStableAndUpdate}
+        />
+      ) : (
+        <></>
+      )}
 
       <StatusBar style="auto" />
     </ScrollView>
