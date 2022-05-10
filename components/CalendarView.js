@@ -11,7 +11,11 @@ import {
   WeekCalendar,
 } from "react-native-calendars";
 import _ from "lodash";
-import { getEventsByDateAndId } from "../assets/HelperFunctions";
+import {
+  getDocById,
+  getEventsByDateAndId,
+  parseLessonTitle,
+} from "../assets/HelperFunctions";
 import { colors } from "../assets/Colors";
 import { getFirestore } from "firebase/firestore";
 import moment from "moment";
@@ -63,139 +67,16 @@ const INITIAL_TIME = { hour: 9, minutes: 0 };
 const today = new Date();
 const getDate = (offset = 0) =>
   CalendarUtils.getCalendarDateString(
-    new Date().setDate(today.getDate() + offset)
+    new Date(new Date().setDate(today.getDate() + offset))
   );
 
-const EVENTS = [
-  {
-    start: `${getDate(-1)} 09:20:00`,
-    end: `${getDate(-1)} 12:00:00`,
-    title: "Merge Request to React Native Calendars",
-    summary: "Merge Timeline Calendar to React Native Calendars",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate()} 01:15:00`,
-    end: `${getDate()} 02:30:00`,
-    title: "Meeting A",
-    summary: "Summary for meeting A",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate()} 01:30:00`,
-    end: `${getDate()} 02:30:00`,
-    title: "Meeting B",
-    summary: "Summary for meeting B",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate()} 01:45:00`,
-    end: `${getDate()} 02:45:00`,
-    title: "Meeting C",
-    summary: "Summary for meeting C",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate()} 02:40:00`,
-    end: `${getDate()} 03:10:00`,
-    title: "Meeting D",
-    summary: "Summary for meeting D",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate()} 02:50:00`,
-    end: `${getDate()} 03:20:00`,
-    title: "Meeting E",
-    summary: "Summary for meeting E",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate()} 04:30:00`,
-    end: `${getDate()} 05:30:00`,
-    title: "Meeting F",
-    summary: "Summary for meeting F",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(1)} 00:30:00`,
-    end: `${getDate(1)} 01:30:00`,
-    title: "Visit Grand Mother",
-    summary: "Visit Grand Mother and bring some fruits.",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(1)} 02:30:00`,
-    end: `${getDate(1)} 03:20:00`,
-    title: "Meeting with Prof. Behjet Zuhaira",
-    summary: "Meeting with Prof. Behjet at 130 in her office.",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(1)} 04:10:00`,
-    end: `${getDate(1)} 04:40:00`,
-    title: "Tea Time with Dr. Hasan",
-    summary: "Tea Time with Dr. Hasan, Talk about Project",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(1)} 01:05:00`,
-    end: `${getDate(1)} 01:35:00`,
-    title: "Dr. Mariana Joseph",
-    summary: "3412 Piedmont Rd NE, GA 3032",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(1)} 14:30:00`,
-    end: `${getDate(1)} 16:30:00`,
-    title: "Meeting Some Friends in ARMED",
-    summary: "Arsalan, Hasnaat, Talha, Waleed, Bilal",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(2)} 01:40:00`,
-    end: `${getDate(2)} 02:25:00`,
-    title: "Meet Sir Khurram Iqbal",
-    summary: "Computer Science Dept. Comsats Islamabad",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(2)} 04:10:00`,
-    end: `${getDate(2)} 04:40:00`,
-    title: "Tea Time with Colleagues",
-    summary: "WeRplay",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(2)} 00:45:00`,
-    end: `${getDate(2)} 01:45:00`,
-    title: "Lets Play Apex Legends",
-    summary: "with Boys at Work",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(2)} 11:30:00`,
-    end: `${getDate(2)} 12:30:00`,
-    title: "Dr. Mariana Joseph",
-    summary: "3412 Piedmont Rd NE, GA 3032",
-    color: colors.lightSecondary,
-  },
-  {
-    start: `${getDate(4)} 12:10:00`,
-    end: `${getDate(4)} 13:45:00`,
-    title: "Merge Request to React Native Calendars",
-    summary: "Merge Timeline Calendar to React Native Calendars",
-    color: colors.lightSecondary,
-  },
-];
-
 export default function CalendarView({ currentStable }) {
+  const db = getFirestore();
+  const [marked, setMarked] = useState({});
   const [currentDate, setCurrentDate] = useState(getDate());
   const [parsedEvents, setParsedEvents] = useState([]);
   const [usedEventIds, setUsedEventIds] = useState([]);
   const [eventsByDate, setEventsByDate] = useState([]);
-  const [marked, setMarked] = useState({});
-
-  const db = getFirestore();
 
   useEffect(() => {
     setCurrentDate(getDate());
@@ -204,49 +85,63 @@ export default function CalendarView({ currentStable }) {
     setMarked({});
   }, [currentStable]);
 
-  useEffect(async () => {
-    const events = await getEventsByDateAndId(
-      db,
-      currentStable.id,
-      currentDate
-    );
-    events.forEach((element) => {
-      // jos event ei ole vielä kalenterissa:
-      if (usedEventIds.includes(element.id) === false) {
-        setParsedEvents([
-          ...parsedEvents,
-          {
-            id: element.id,
-            start: moment
+  useEffect(() => {
+    const getEvents = async () => {
+      return await getEventsByDateAndId(db, currentStable.id, currentDate);
+    };
+
+    getEvents().then((results) => {
+      results.forEach(async (element) => {
+        // opettajan tiedot
+        const teacher = await getDocById(db, "users", element.data.teacher);
+        // ratsastaja-ratsu -otsikko:
+        const eventTitle = await parseLessonTitle(db, element.data.students);
+        // jos event ei oo vielä kalenterissa:
+        if (usedEventIds.includes(element.id) === false) {
+          setMarked({
+            ...marked,
+            [`${moment
               .unix(element.data.startTime.seconds)
-              .format("YYYY-MM-DD HH:mm:ss"),
-            end: moment
-              .unix(element.data.endTime.seconds)
-              .format("YYYY-MM-DD HH:mm:ss"),
-            title: "TODO: otsikko",
-            summary: element.data.description,
-          },
-        ]);
-        // lisätään id käytettyihin ettei tuu tuplia
-        setUsedEventIds([...usedEventIds, element.id]);
-        // lisätään täppä kalenterin pvm:ään
-        setMarked({
-          ...marked,
-          [`${moment
-            .unix(element.data.startTime.seconds)
-            .format("YYYY-MM-DD")}`]: {
-            marked: true,
-          },
-        });
-      }
+              .format("YYYY-MM-DD")}`]: {
+              marked: true,
+            },
+          });
+          setParsedEvents([
+            ...parsedEvents,
+            {
+              id: element.id,
+              start: moment
+                .unix(element.data.startTime.seconds)
+                .format("YYYY-MM-DD HH:mm:ss"),
+              end: moment
+                .unix(element.data.endTime.seconds)
+                .format("YYYY-MM-DD HH:mm:ss"),
+              title: eventTitle.join(", "),
+              summary:
+                element.data.description +
+                " (" +
+                teacher.first_name +
+                " " +
+                teacher.last_name +
+                ")",
+            },
+          ]);
+
+          // lisätään id käytettyihin ettei tuu tuplia
+          setUsedEventIds([...usedEventIds, element.id]);
+        }
+      });
     });
+  }, [currentDate]);
+
+  useEffect(() => {
     // parsi eventit kalenteriin
     setEventsByDate(
       _.groupBy(parsedEvents, (e) =>
         CalendarUtils.getCalendarDateString(e.start)
       )
     );
-  }, [currentDate]);
+  }, [parsedEvents]);
 
   const onDateChanged = (date) => {
     //console.warn("TimelineCalendarScreen onDateChanged: ", date, updateSource);
@@ -259,6 +154,10 @@ export default function CalendarView({ currentStable }) {
   };
 
   const createNewEvent = (timeString, timeObject) => {
+    // TODO: selvitä onko käyttäjällä oikeuksia
+    console.error("Ei oikeuksia kalenteritapahtumien luontiin");
+    return;
+
     const hourString = `${(timeObject.hour + 1).toString().padStart(2, "0")}`;
     const minutesString = `${timeObject.minutes.toString().padStart(2, "0")}`;
 
@@ -267,7 +166,7 @@ export default function CalendarView({ currentStable }) {
       start: `${timeString}`,
       end: `${timeObject.date} ${hourString}:${minutesString}:00`,
       title: "New Event",
-      color: "#ffffff",
+      color: colors.lightPrimary,
     };
 
     if (timeObject.date) {
@@ -325,7 +224,7 @@ export default function CalendarView({ currentStable }) {
   const timelineProps = {
     format24h: true,
     onBackgroundLongPress: createNewEvent,
-    onBackgroundLongPressOut: approveNewEvent,
+    //onBackgroundLongPressOut: approveNewEvent,
     scrollToFirst: true,
     //start: 0,
     //end: 24,
@@ -335,6 +234,19 @@ export default function CalendarView({ currentStable }) {
     ],
     overlapEventsSpacing: 8,
     rightEdgeSpacing: 24,
+  };
+
+  const CreateTimelineList = (props) => {
+    return (
+      <TimelineList
+        events={props.eventsByDate}
+        timelineProps={timelineProps}
+        showNowIndicator
+        scrollToFirst
+        initialTime={INITIAL_TIME}
+        //onBackgroundLongPress={(e) => console.log(e)}
+      />
+    );
   };
 
   return (
@@ -375,13 +287,7 @@ export default function CalendarView({ currentStable }) {
           todayTextColor: colors.darkSecondary,
         }}
       />
-      <TimelineList
-        events={eventsByDate}
-        timelineProps={timelineProps}
-        showNowIndicator
-        scrollToFirst
-        initialTime={INITIAL_TIME}
-      />
+      <CreateTimelineList eventsByDate={eventsByDate} />
     </CalendarProvider>
   );
 }

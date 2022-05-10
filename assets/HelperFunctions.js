@@ -25,7 +25,12 @@ const getDocById = async (db, coll, id) => {
 const getEventsByDateAndId = async (db, stableId, date) => {
   const currentDate = new Date(date);
   const timeStamp = Timestamp.fromMillis(
-    currentDate.setDate(currentDate.getDate() - 7)
+    new Date(currentDate.setDate(currentDate.getDate() - 7)).setHours(
+      0,
+      0,
+      0,
+      0
+    )
   );
   var events = [];
 
@@ -46,10 +51,8 @@ const joinStableWithKey = async (db, key, uid) => {
   const keyDoc = query(collectionGroup(db, "keys"), where("key", "==", key));
   const snaps = await getDocs(keyDoc);
 
-  console.log("noniiiin");
-
+  // jos avain ei vastannut mitään tallia:
   if (snaps.empty === true) {
-    console.log("Snaps empty:");
     return Promise.reject(Error("Virheellinen talliavain."));
   }
 
@@ -91,10 +94,24 @@ const returnUsersStableDocs = async (db, uid) => {
   );
 };
 
+const parseLessonTitle = async (db, studentsArray) => {
+  let parsed = [];
+  await Promise.all(
+    studentsArray.map(async (pair) => {
+      let student = await getDocById(db, "users", pair.rider);
+      let horse = await getDocById(db, "horses", pair.horse);
+      parsed.push(student.first_name + "—" + horse.nickname);
+    })
+  );
+
+  return parsed;
+};
+
 export {
   getDocById,
   joinStableWithKey,
   getEventsByDateAndId,
   setUsersNames,
   returnUsersStableDocs,
+  parseLessonTitle,
 };

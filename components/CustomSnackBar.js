@@ -3,7 +3,7 @@ import { Snackbar } from "react-native-paper";
 import React, { useState, useEffect } from "react";
 import { colors } from "../assets/Colors";
 
-export default function CustomSnackBar({ snackmuuttujat }) {
+export default function CustomSnackBar({ sidemenu = true, snackmuuttujat }) {
   const [snackProperties, setSnackProperties] = snackmuuttujat;
 
   const onDismiss = () =>
@@ -19,11 +19,17 @@ export default function CustomSnackBar({ snackmuuttujat }) {
 
   return (
     <Snackbar
+      testID="SNACK"
       style={{
         backgroundColor: snackProperties.bgcolor,
         width: Dimensions.get("window").width - 120,
+        height: 50,
+        marginVertical: 10,
       }}
       visible={snackProperties.visible}
+      wrapperStyle={
+        sidemenu === true ? {} : { position: "fixed", alignItems: "center" }
+      }
       duration={5}
       onDismiss={() => onDismiss}
       action={{

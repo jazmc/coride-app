@@ -31,7 +31,6 @@ export default function TabNavigator({ route }) {
     />
   );
 
-  console.log(currentStable);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -123,9 +122,10 @@ export default function TabNavigator({ route }) {
           />
         )}
         options={{
+          /* TULEVAISUUDESSA TÄHÄN SE PUHNRO ILMOITUS
           tabBarBadge: route.params.profileNotices.filter(
             (notice) => notice === true
-          ).length,
+          ).length,*/
           tabBarBadgeStyle: {
             backgroundColor: colors.darkSecondary,
             color: colors.offWhite,

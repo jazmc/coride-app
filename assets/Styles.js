@@ -130,6 +130,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   iosPadding: 40,
+  infoMessage: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    marginVertical: 5,
+    padding: 10,
+    borderColor: "#ddd",
+    borderWidth: 1,
+  },
+  lesson: {
+    backgroundColor: colors.lightPrimary,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+  },
 });
 
 export default styles;

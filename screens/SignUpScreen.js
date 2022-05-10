@@ -55,6 +55,9 @@ export default function SignUpScreen({ setIsLoggedIn }) {
     if (noMatchError === true || weakPasswordError === true) {
       return false;
     }
+    if (firstName == "" || lastName == "" || email == "" || password == "") {
+      return false;
+    }
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // success -> automatic sign in

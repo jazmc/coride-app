@@ -1,5 +1,6 @@
 import "react-native-gesture-handler";
 import React, { useState, useEffect } from "react";
+import { LogBox } from "react-native";
 // navigation
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -37,6 +38,7 @@ export default function App() {
   const [authenticatedUser, setAuthenticatedUser] = useState({});
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // tulevaisuudessa puh.nro tarkistus
   const [profileNotices, setProfileNotices] = useState([]);
 
   useEffect(() => {
@@ -46,23 +48,29 @@ export default function App() {
         // https://firebase.google.com/docs/reference/js/firebase.User
         console.log("User " + user.email + " is signed in");
         setAuthenticatedUser(user);
+        // sähköposti vahvistettu -> kirjaa sisään
         if (user.emailVerified === true) {
           setIsLoggedIn(true);
         }
       } else {
+        // ei sisäänkirjautunutta
         setIsLoggedIn(false);
-        console.warn("No user signed in");
         setAuthenticatedUser({});
       }
     });
   }, []);
 
+  /*
+  // tulevaisuudessa puhelinnumeron tarkistus
   useEffect(() => {
-    setProfileNotices([
-      !("displayName" in authenticatedUser == null),
-      !("phoneNumber" in authenticatedUser == null),
-    ]);
+    setProfileNotices([!("phoneNumber" in authenticatedUser == null)]);
   }, [authenticatedUser]);
+  */
+
+  // hiljennä ärsyttävä usenativedriver warning
+  useEffect(() => {
+    LogBox.ignoreLogs(["Animated: `useNativeDriver`"]);
+  }, []);
 
   return (
     <NavigationContainer>
@@ -72,9 +80,11 @@ export default function App() {
             <Stack.Screen
               name="Home"
               component={TabNavigator}
-              initialParams={{
-                profileNotices: profileNotices,
-              }}
+              initialParams={
+                {
+                  //profileNotices: profileNotices,
+                }
+              }
             />
           </>
         ) : (
