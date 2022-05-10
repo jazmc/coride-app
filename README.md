@@ -1,6 +1,15 @@
 # CoRide app :horse_racing:
-Haaga-Helia ammattikorkeakoulun Mobiiliohjelmointikurssin lopputyö, kevät 2022. Työkaluina React Native & Expo (+ Google Firebase).
+Haaga-Helia ammattikorkeakoulun Mobiiliohjelmointikurssin lopputyö, kevät 2022. Työkaluina React Native & Expo (+ Google Firebase). Julkaistu [Expossa](https://expo.dev/@jazmc/coride). 
 > Jasmin Lumme [@jazmc](https://github.com/jazmc)
+
+#### :books: Käytetyt teknologiat ja kirjastot
+**Gradienttitausta:** [Expo Linear Gradient](https://docs.expo.dev/versions/latest/sdk/linear-gradient/)\
+**Navigointi:** [React Navigation](https://reactnavigation.org/docs/getting-started/) (stack & bottom tab)\
+**Autentikaatio ja tietokanta:** [Google Firebase](https://firebase.google.com/docs/) (Auth & Cloud Firestore)\
+**Kalenteri:** [React Native Calendars](https://github.com/wix/react-native-calendars)\
+**Snackbarit:** [React Native Paper](https://callstack.github.io/react-native-paper/snackbar.html)\
+**Drawer-menu-sivupalkki:** [React Native Side Menu](https://www.npmjs.com/package/react-native-side-menu-updated)
+
 
 ### Alusta & käynnistä sovellus
 ```pwsh
