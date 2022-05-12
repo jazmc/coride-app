@@ -81,17 +81,7 @@ export default function CalendarView({ currentStable }) {
   const [newMark, setNewMark] = useState({});
   const [eventData, setEventData] = useState({});
 
-  useEffect(() => {
-    // jos currentStable vaihtuu validiksi eikä esim. poistu
-    if (Object.keys(currentStable).length > 0) {
-      setCurrentDate(getDate());
-      setParsedEvents([]);
-      setUsedEventIds([]);
-      setMarked({});
-    }
-  }, [currentStable]);
-
-  useEffect(() => {
+  const getEventsFromDb = () => {
     // hae eventit firebasesta
     const getEvents = async () => {
       return await getEventsByDateAndId(db, currentStable.id, currentDate);
@@ -105,9 +95,6 @@ export default function CalendarView({ currentStable }) {
         const eventTitle = await parseLessonTitle(db, element.data.students);
         // jos event ei oo vielä kalenterissa:
         if (usedEventIds.includes(element.id) === false) {
-          console.warn("###EVENTIN " + element.id + " LISÄYS###");
-          console.warn(usedEventIds.includes(element.id));
-          console.warn(usedEventIds);
           // luo merkille pvm
           setNewMark({
             date: moment
@@ -136,7 +123,22 @@ export default function CalendarView({ currentStable }) {
         }
       });
     });
-  }, [currentDate]);
+  };
+
+  useEffect(() => {
+    // jos currentStable vaihtuu validiksi eikä esim. poistu
+    if (Object.keys(currentStable).length > 0) {
+      setCurrentDate(getDate());
+      setParsedEvents([]);
+      setUsedEventIds([]);
+      setMarked({});
+      //getEventsFromDb();
+    }
+  }, [currentStable]);
+
+  useEffect(() => {
+    getEventsFromDb();
+  }, [currentDate, currentStable]);
 
   useEffect(() => {
     // uusi täppä täppä-olion jatkeeksi
