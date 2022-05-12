@@ -72,24 +72,31 @@ const getDate = (offset = 0) =>
 
 export default function CalendarView({ currentStable }) {
   const db = getFirestore();
+
   const [marked, setMarked] = useState({});
   const [currentDate, setCurrentDate] = useState(getDate());
   const [parsedEvents, setParsedEvents] = useState([]);
   const [usedEventIds, setUsedEventIds] = useState([]);
   const [eventsByDate, setEventsByDate] = useState([]);
+  const [newMark, setNewMark] = useState({});
+  const [eventData, setEventData] = useState({});
 
   useEffect(() => {
-    setCurrentDate(getDate());
-    setParsedEvents([]);
-    setUsedEventIds([]);
-    setMarked({});
+    // jos currentStable vaihtuu validiksi eikä esim. poistu
+    if (Object.keys(currentStable).length > 0) {
+      setCurrentDate(getDate());
+      setParsedEvents([]);
+      setUsedEventIds([]);
+      setMarked({});
+    }
   }, [currentStable]);
 
   useEffect(() => {
+    // hae eventit firebasesta
     const getEvents = async () => {
       return await getEventsByDateAndId(db, currentStable.id, currentDate);
     };
-
+    // venaa hakua ja sitten käy jokainen event läpi
     getEvents().then((results) => {
       results.forEach(async (element) => {
         // opettajan tiedot
@@ -98,41 +105,57 @@ export default function CalendarView({ currentStable }) {
         const eventTitle = await parseLessonTitle(db, element.data.students);
         // jos event ei oo vielä kalenterissa:
         if (usedEventIds.includes(element.id) === false) {
-          setMarked({
-            ...marked,
-            [`${moment
+          console.warn("###EVENTIN " + element.id + " LISÄYS###");
+          console.warn(usedEventIds.includes(element.id));
+          console.warn(usedEventIds);
+          // luo merkille pvm
+          setNewMark({
+            date: moment
               .unix(element.data.startTime.seconds)
-              .format("YYYY-MM-DD")}`]: {
-              marked: true,
-            },
+              .format("YYYY-MM-DD"),
           });
-          setParsedEvents([
-            ...parsedEvents,
-            {
-              id: element.id,
-              start: moment
-                .unix(element.data.startTime.seconds)
-                .format("YYYY-MM-DD HH:mm:ss"),
-              end: moment
-                .unix(element.data.endTime.seconds)
-                .format("YYYY-MM-DD HH:mm:ss"),
-              title: eventTitle.join(", "),
-              summary:
-                element.data.description +
-                " (" +
-                teacher.first_name +
-                " " +
-                teacher.last_name +
-                ")",
-            },
-          ]);
-
-          // lisätään id käytettyihin ettei tuu tuplia
-          setUsedEventIds([...usedEventIds, element.id]);
+          // luo tapahtumalle tiedot
+          setEventData({
+            id: element.id,
+            start: moment
+              .unix(element.data.startTime.seconds)
+              .format("YYYY-MM-DD HH:mm:ss"),
+            end: moment
+              .unix(element.data.endTime.seconds)
+              .format("YYYY-MM-DD HH:mm:ss"),
+            title: eventTitle.join(", "),
+            summary:
+              element.data.description +
+              " (" +
+              teacher.first_name +
+              " " +
+              teacher.last_name +
+              ")",
+          });
+          // --> useEffectit hoitaa nämä kalenteriin
         }
       });
     });
   }, [currentDate]);
+
+  useEffect(() => {
+    // uusi täppä täppä-olion jatkeeksi
+    setMarked({
+      ...marked,
+      [newMark.date]: { marked: true },
+    });
+  }, [newMark]);
+
+  useEffect(() => {
+    // lisätään id käytettyihin ettei tuu tuplia
+    setUsedEventIds([...usedEventIds, eventData.id]);
+    // uusi event parsittujen joukkoon kalenteriin
+    if (parsedEvents.length > 0) {
+      setParsedEvents([...parsedEvents, eventData]);
+    } else {
+      setParsedEvents([eventData]);
+    }
+  }, [eventData]);
 
   useEffect(() => {
     // parsi eventit kalenteriin
@@ -249,6 +272,27 @@ export default function CalendarView({ currentStable }) {
     );
   };
 
+  const CreateWeekCalendar = (props) => {
+    return (
+      <WeekCalendar
+        firstDay={1}
+        markedDates={props.marked}
+        leftArrowImageSource={{ uri: require("../assets/previous.png") }}
+        rightArrowImageSource={{ uri: require("../assets/next.png") }}
+        allowShadow={true}
+        theme={{
+          weekVerticalMargin: 0,
+          "stylesheet.calendar.header": {
+            week: { marginVertical: 0, marginTop: 0 },
+          },
+          selectedDayBackgroundColor: colors.darkSecondary,
+          dotColor: colors.darkSecondary,
+          todayTextColor: colors.darkSecondary,
+        }}
+      />
+    );
+  };
+
   return (
     <CalendarProvider
       date={currentDate}
@@ -271,22 +315,7 @@ export default function CalendarView({ currentStable }) {
         paddingRight: 20,
       }}
     >
-      <WeekCalendar
-        firstDay={1}
-        markedDates={marked}
-        leftArrowImageSource={{ uri: require("../assets/previous.png") }}
-        rightArrowImageSource={{ uri: require("../assets/next.png") }}
-        allowShadow={true}
-        theme={{
-          weekVerticalMargin: 0,
-          "stylesheet.calendar.header": {
-            week: { marginVertical: 0, marginTop: 0 },
-          },
-          selectedDayBackgroundColor: colors.darkSecondary,
-          dotColor: colors.darkSecondary,
-          todayTextColor: colors.darkSecondary,
-        }}
-      />
+      <CreateWeekCalendar marked={marked} />
       <CreateTimelineList eventsByDate={eventsByDate} />
     </CalendarProvider>
   );
