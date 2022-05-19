@@ -79,7 +79,6 @@ export default function StableList({
         message: "Suosikkitallin päivitys onnistui.",
         visible: true,
       });
-      console.log(snackProperties);
     } catch (error) {
       setSnackProperties({
         ...snackProperties,

@@ -12,12 +12,18 @@ import moment from "moment";
 export default function LessonTable({ currentStable }) {
   const db = getFirestore();
 
+  const [stableToListen, setStableToListen] = useState(currentStable);
   const [lessons, setLessons] = useState([]);
+
+  useEffect(() => {
+    setStableToListen(currentStable);
+    setLessons([]);
+  }, [currentStable]);
 
   useEffect(async () => {
     const todaysLessons = await getEventsByDateAndId(
       db,
-      currentStable.id,
+      stableToListen.id,
       new Date(new Date().setHours(0, 0, 0, 0))
     );
 
@@ -41,7 +47,7 @@ export default function LessonTable({ currentStable }) {
         ]);
       }
     });
-  }, []);
+  }, [stableToListen]);
 
   const Lessons = (props) => {
     return (

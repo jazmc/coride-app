@@ -74,6 +74,7 @@ export default function CalendarView({ currentStable }) {
   const db = getFirestore();
 
   const [marked, setMarked] = useState({});
+  const [stableToListen, setStableToListen] = useState(currentStable);
   const [currentDate, setCurrentDate] = useState(getDate());
   const [parsedEvents, setParsedEvents] = useState([]);
   const [usedEventIds, setUsedEventIds] = useState([]);
@@ -84,7 +85,7 @@ export default function CalendarView({ currentStable }) {
   const getEventsFromDb = () => {
     // hae eventit firebasesta
     const getEvents = async () => {
-      return await getEventsByDateAndId(db, currentStable.id, currentDate);
+      return await getEventsByDateAndId(db, stableToListen.id, currentDate);
     };
     // venaa hakua ja sitten käy jokainen event läpi
     getEvents().then((results) => {
@@ -132,13 +133,14 @@ export default function CalendarView({ currentStable }) {
       setParsedEvents([]);
       setUsedEventIds([]);
       setMarked({});
+      setStableToListen(currentStable);
       //getEventsFromDb();
     }
   }, [currentStable]);
 
   useEffect(() => {
     getEventsFromDb();
-  }, [currentDate, currentStable]);
+  }, [currentDate, stableToListen]);
 
   useEffect(() => {
     // uusi täppä täppä-olion jatkeeksi
