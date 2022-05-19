@@ -44,7 +44,6 @@ export default function ForgotPasswordScreen() {
   };
 
   const onBackToLoginPressed = () => {
-    console.warn("back 2 loginpressed");
     navigation.navigate("Login");
   };
 

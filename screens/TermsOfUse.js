@@ -18,7 +18,9 @@ import { useNavigation } from "@react-navigation/native";
 
 export default function TermsOfUse() {
   return (
-    <View>
+    <View style={[styles.tabViewContainer, { marginTop: 30 }]}>
+      <Text style={styles.h2Text}>Terms of use</Text>
+      <Text>Terms of Use</Text>
       <Text>Terms of Use</Text>
       <StatusBar style="auto" />
     </View>
